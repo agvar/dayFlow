@@ -1,0 +1,36 @@
+name: Auto Commit Changes
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run at midnight every day
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Configure Git
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+    
+    - name: Extract Changelog Message
+      id: changelog
+      run: |
+        CHANGELOG_MSG=$(sed -n '/^## \[Unreleased\]/,/^## /p' CHANGELOG.md | sed '1d;$d' | sed '/^$/d' | sed 's/^/- /' | tr '\n' ' ')
+        echo "changelog_msg=$CHANGELOG_MSG" >> $GITHUB_OUTPUT
+
+    - name: Check for changes
+      run: |
+        if [[ -n $(git status --porcelain) ]]; then
+          git add .
+          COMMIT_MSG="${GITHUB_REPOSITORY#*/} update: ${{ steps.changelog.outputs.changelog_msg }}"
+          git commit -m "$COMMIT_MSG"
+          git push
+        else
+          echo "No changes to commit"
+        fi
