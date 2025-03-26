@@ -5,7 +5,11 @@ const db = SQLite.openDatabaseAsync('dailyActivities.db');
 
 export const initDatabase = async () => {
   try {
+    console.log('Opening database connection...');
     const database = await db;
+    console.log('Database connection opened successfully');
+    
+    console.log('Creating database tables...');
     await database.execAsync(`
         CREATE TABLE IF NOT EXISTS days (
         day_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,8 +30,13 @@ export const initDatabase = async () => {
         FOREIGN KEY (day_id) REFERENCES days(day_id)
       );
     `);
+    console.log('Database tables created successfully');
   } catch (error) {
     console.error('Error creating tables:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     throw error;
   }
 };
@@ -42,7 +51,7 @@ export const saveDailyActivities = async (date: string, activities: { hour: stri
       'INSERT OR REPLACE INTO days (date) VALUES (?) RETURNING day_id',
       [date]
     );
-    const dayId = dayResult.insertId;
+    const dayId = dayResult.lastInsertRowId;
 
     // Insert sleep time with day_id
     await database.runAsync(
@@ -72,51 +81,49 @@ export const saveDailyActivities = async (date: string, activities: { hour: stri
   }
 };
 
-export const loadDailyActivities = async (date: string): Promise<DailyActivitiesRecord> => {
+export const loadDailyActivities = async (): Promise<DailyActivitiesRecord> => {
   try {
     const database = await db;
-    const result: DailyActivitiesRecord = {
-      [date]: {
+    const result: DailyActivitiesRecord = {};
+
+    // Get all days
+    const dayRows = await database.getAllAsync<{day_id: number; date: string}>(
+      'SELECT day_id, date FROM days'
+    );
+
+    for (const dayRow of dayRows) {
+      // Initialize default data for this date
+      result[dayRow.date] = {
         sleepTime: { start: '22:00', end: '06:00' },
         activities: Array.from({length: 24}, () => ({ hour: '', activity: '' as ActivityType }))
+      };
+
+      // Load sleep time using day_id
+      const sleepTimeRows = await database.getAllAsync<{start_time: string; end_time: string}>(
+        'SELECT start_time, end_time FROM sleep_times WHERE day_id = ?',
+        [dayRow.day_id]
+      );
+
+      if (sleepTimeRows.length > 0) {
+        result[dayRow.date].sleepTime = {
+          start: sleepTimeRows[0].start_time,
+          end: sleepTimeRows[0].end_time
+        };
       }
-    };
 
-    // Get day_id first
-    const dayRow = await database.getFirstAsync<{day_id: number}>(
-      'SELECT day_id FROM days WHERE date = ?',
-      [date]
-    );
+      // Load activities using day_id
+      const activityRows = await database.getAllAsync<{hour: number; activity: ActivityType}>(
+        'SELECT hour, activity FROM activities WHERE day_id = ?',
+        [dayRow.day_id]
+      );
 
-    if (!dayRow) {
-      return result;
+      activityRows.forEach(row => {
+        result[dayRow.date].activities[row.hour] = {
+          hour: row.hour.toString().padStart(2, '0') + ':00',
+          activity: row.activity
+        };
+      });
     }
-
-    // Load sleep time using day_id
-    const sleepTimeRows = await database.getAllAsync<{start_time: string; end_time: string}>(
-      'SELECT start_time, end_time FROM sleep_times WHERE day_id = ?',
-      [dayRow.day_id]
-    );
-
-    if (sleepTimeRows.length > 0) {
-      result[date].sleepTime = {
-        start: sleepTimeRows[0].start_time,
-        end: sleepTimeRows[0].end_time
-      };
-    }
-
-    // Load activities using day_id
-    const activityRows = await database.getAllAsync<{hour: number; activity: ActivityType}>(
-      'SELECT hour, activity FROM activities WHERE day_id = ?',
-      [dayRow.day_id]
-    );
-
-    activityRows.forEach(row => {
-      result[date].activities[row.hour] = {
-        hour: row.hour.toString().padStart(2, '0') + ':00',
-        activity: row.activity
-      };
-    });
 
     return result;
   } catch (error) {

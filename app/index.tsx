@@ -1,11 +1,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { Card, SegmentedButtons, Text, Title } from 'react-native-paper';
 import DaySelector from './DaySelector';
 import SleepTimeSelector from './SleepTimeSelector';
 import { ACTIVITIES, ActivityType, DailyActivitiesRecord, SleepTime } from './types/types';
 import { initDatabase, loadDailyActivities, saveDailyActivities } from './utils/database';
+import { debounce } from './utils/debounce';
 
 export default function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -18,26 +19,67 @@ export default function HomeScreen() {
       }
     };
   });
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const setupDatabase = async () => {
-      await initDatabase();
-      const savedActivities = await loadDailyActivities(memoizedDay);
-      setDailyActivities(savedActivities);
+      setIsLoading(true);
+      setError(null);
+      try {
+        console.log('Database setup start');
+        await initDatabase();
+        const savedActivities = await loadDailyActivities();
+        setDailyActivities(savedActivities);
+      } catch (err) {
+        console.error('Database setup error:', err);
+        setError('Failed to initialize database. Please restart the app.');
+      } finally {
+        setIsLoading(false);
+      }
     };
     setupDatabase();
   }, []);
 
+  const debouncedSave = useMemo(
+    () =>
+      debounce(async (day: string, activities: any[], sleepTime: SleepTime) => {
+        try {
+          await saveDailyActivities(day, activities, sleepTime);
+        } catch (error) {
+          console.error('Error saving activities:', error);
+          setError('Failed to save activities. Please try again.');
+        }
+      }, 1000),
+    []
+  );
+
   useEffect(() => {
-    const saveActivities = async () => {
-      await saveDailyActivities(
+    if (dailyActivities[memoizedDay]) {
+      debouncedSave(
         memoizedDay,
-        dailyActivities[memoizedDay]?.activities || [],
-        dailyActivities[memoizedDay]?.sleepTime || { start: '22:00', end: '06:00' }
+        dailyActivities[memoizedDay].activities,
+        dailyActivities[memoizedDay].sleepTime
       );
-    };
-    saveActivities();
-  }, [dailyActivities, memoizedDay]);
+    }
+  }, [dailyActivities, memoizedDay, debouncedSave]);
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.loadingText}>Setting up database...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
 
   const handleDayChange=(date:Date)=>{
     if(!dailyActivities[memoizedDay]){
@@ -69,7 +111,7 @@ export default function HomeScreen() {
       const prevActivities = prevState[memoizedDay]?.activities || Array.from({length:24}, 
         () => ({ hour: '', activity: '' as ActivityType }))
       const newActivities = [...prevActivities]
-      newActivities[hourIndex] = {...newActivities[hourIndex],activity };
+      newActivities[hourIndex] = {...newActivities[hourIndex],hour:hourIndex.toString(),activity:activity};
       return{
         ...prevState,
         [memoizedDay] :{
@@ -77,6 +119,7 @@ export default function HomeScreen() {
           activities :newActivities
         }
       }
+      
     })
 
   }
@@ -166,7 +209,21 @@ const styles = StyleSheet.create({
       width: '70%',
       marginLeft: 8,
   },
-})
+  centerContent: {
+      justifyContent: 'center',
+      alignItems: 'center',
+  },
+  loadingText: {
+      marginTop: 16,
+      fontSize: 16,
+  },
+  errorText: {
+      color: 'red',
+      fontSize: 16,
+      textAlign: 'center',
+      padding: 16,
+  },
+});
 
 
   

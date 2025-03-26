@@ -2,12 +2,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
+import { SleepTime } from './types/types';
 
-
-interface SleepTime  {
-    start:string ;
-    end : string ;
-}
 
 interface SleepTimeSelectorProps {
     onSleepTimeChange : (SleepTime:SleepTime) => void ;

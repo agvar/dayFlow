@@ -17,4 +17,4 @@ export interface SleepActivity {
     activities :ActivityItem[]
 }
 
-export type DailyActivitiesRecord = Record<string, SleepActivity>;
+export  type DailyActivitiesRecord = Record<string, SleepActivity>;
