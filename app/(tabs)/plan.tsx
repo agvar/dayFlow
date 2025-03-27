@@ -2,11 +2,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { Card, SegmentedButtons, Text, Title } from 'react-native-paper';
-import DaySelector from './DaySelector';
-import SleepTimeSelector from './SleepTimeSelector';
-import { ACTIVITIES, ActivityType, DailyActivitiesRecord, SleepTime } from './types/types';
-import { initDatabase, loadDailyActivities, saveDailyActivities } from './utils/database';
-import { debounce } from './utils/debounce';
+import DaySelector from '../DaySelector';
+import SleepTimeSelector from '../SleepTimeSelector';
+import { ACTIVITIES, ActivityType, DailyActivitiesRecord, SleepTime } from '../types/types';
+import { initDatabase, loadDailyActivities, saveDailyActivities } from '../utils/database';
+import { debounce } from '../utils/debounce';
 
 export default function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -30,6 +30,7 @@ export default function HomeScreen() {
         console.log('Database setup start');
         await initDatabase();
         const savedActivities = await loadDailyActivities();
+        console.log(savedActivities)
         setDailyActivities(savedActivities);
       } catch (err) {
         console.error('Database setup error:', err);
