@@ -8,7 +8,7 @@ import SleepTimeSelector from '../SleepTimeSelector';
 import { initializeDatabase, updateDailyActivities } from '../store/slices/activitiesSlice';
 import { setSelectedDate } from '../store/slices/dateSlice';
 import { AppDispatch, RootState } from '../store/store';
-import { ACTIVITIES, ActivityType, SleepTime } from '../types/types';
+import { ACTIVITIES, ActivityType } from '../types/types';
 
 export default function HomeScreen() {
   const dispatch = useDispatch<AppDispatch>();
@@ -48,13 +48,7 @@ export default function HomeScreen() {
     dispatch(setSelectedDate(date));
   }
 
-  const handleSleepTimeChange = (sleepTime: SleepTime) => {
-    dispatch(updateDailyActivities({
-      day: memoizedDay,
-      sleepTime: { start: sleepTime.start, end: sleepTime.end },
-      activities: dailyActivities[memoizedDay]?.activities || Array.from({ length: 24 }, () => ({ hour: '', activity: '' as ActivityType }))
-    }));
-  }
+
 
   const handleActivityChange = (hourIndex: number, activity: ActivityType) => {
     const prevActivities = dailyActivities[memoizedDay]?.activities || Array.from({ length: 24 }, 
@@ -85,9 +79,9 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <ScrollView>
-      <DaySelector onDateChange={handleDayChange} />
+      <DaySelector />
         <Title style={styles.titleMain}>Daily Activity Tracker</Title>
-        <SleepTimeSelector onSleepTimeChange={handleSleepTimeChange} />
+        <SleepTimeSelector />
         <Text variant="titleMedium" style={styles.titleActivity}>Schedule your Activities</Text>
         {(dailyActivities[memoizedDay]?.activities ?? Array.from({length: 24}, () => ({ hour: '', activity: '' as ActivityType }))).map((item, index) => {
           if (!isSleepHour(`${index.toString().padStart(2, '0')}:00`)) {

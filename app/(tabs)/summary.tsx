@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Card, IconButton, Modal, Portal, Text } from 'react-native-paper';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 import { ActivityItem, ActivityType } from '../types/types';
 
-interface ActivitySummaryProps {
-  date: string;
-  activities: ActivityItem[];
-}
-
-export default function ActivitySummary({ date, activities }: ActivitySummaryProps) {
+export default function ActivitySummary() {
+  const selectedDate = useSelector((state: RootState) => new Date(state.date.selectedDate));
+  const dailyActivities = useSelector((state: RootState) => state.activities.dailyActivities);
+  const memoizedDay = selectedDate.toISOString().split('T')[0];
+  const activities = dailyActivities[memoizedDay]?.activities || [];
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -38,7 +39,7 @@ export default function ActivitySummary({ date, activities }: ActivitySummaryPro
   return (
     <>
       <ScrollView style={styles.container}>
-        <Text variant="titleLarge" style={styles.title}>Activity Summary for {date}</Text>
+        <Text variant="titleLarge" style={styles.title}>Activity Summary for {memoizedDay}</Text>
         {activities.length === 0 ? (
           <Card style={styles.emptyCard}>
             <Card.Content>

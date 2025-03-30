@@ -2,16 +2,15 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
-import { SleepTime } from './types/types';
+import { useDispatch, useSelector } from 'react-redux';
+import { setSleepTime } from './store/slices/sleepTimeSlice';
+import { RootState } from './store/store';
 
 
-interface SleepTimeSelectorProps {
-    onSleepTimeChange : (SleepTime:SleepTime) => void ;
-}
-
-export default function SleepTimeSelector({ onSleepTimeChange} :SleepTimeSelectorProps) {
+export default function SleepTimeSelector() {
+    const dispatch = useDispatch();
+    const sleepTime = useSelector((state: RootState) => state.sleepTime.sleepTime);
     const [visible,setVisible] = useState<{start:boolean; end:boolean}>({ start:false, end:false});
-    const [sleepTime,setSleepTime] = useState<{start:string; end:string}>({start: '22:00',end:'06:00'});
 
     const onDismiss = () =>{
         setVisible({start:false,end:false});
@@ -22,8 +21,7 @@ export default function SleepTimeSelector({ onSleepTimeChange} :SleepTimeSelecto
         const minutes = date.getMinutes();
         const time = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}`;
         const newSleepTime = {...sleepTime,[type]:time}
-        setSleepTime(newSleepTime);
-        onSleepTimeChange(newSleepTime);
+        dispatch(setSleepTime(newSleepTime));
         onDismiss();
     }
 

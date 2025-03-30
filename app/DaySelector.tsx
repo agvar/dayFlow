@@ -2,22 +2,21 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button } from 'react-native-paper';
+import { useDispatch, useSelector } from 'react-redux';
+import { setSelectedDate } from './store/slices/dateSlice';
+import { RootState } from './store/store';
 
-interface DaySelectorProps{
-    onDateChange:(date:Date)=>void;
-}
-
-export default function DaySelector({onDateChange}:DaySelectorProps) {
+export default function DaySelector() {
 const [visible,setVisible]= useState<boolean>(false);
-const [day,setDay] = useState<Date>(new Date());
+const dispatch = useDispatch();
+const selectedDate = useSelector((state: RootState) => new Date(state.date.selectedDate));
 
 const onDismiss = () =>{
     setVisible(false);
 };
 
 const onConfirm = (date:Date)=>{
-    setDay(date);
-    onDateChange(date);
+    dispatch(setSelectedDate(date));
     onDismiss();
 }
 
@@ -25,11 +24,11 @@ return (
     <View style={styles.container}>
         <Button style={styles.button}
         mode='outlined'
-        onPress = {()=>setVisible(true)}>{day.toLocaleDateString()}</Button>
+        onPress = {()=>setVisible(true)}>{selectedDate.toLocaleDateString()}</Button>
         { visible &&
         <DateTimePicker
         mode="date"
-        value={day}
+        value={selectedDate}
         minimumDate={new Date()}
         maximumDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
         onChange={(event, date) => date && onConfirm(date)}
@@ -54,4 +53,4 @@ const styles = StyleSheet.create({
         justifyContent:'center',
         gap:16
     }
-})  
+})

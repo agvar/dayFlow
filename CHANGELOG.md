@@ -1,6 +1,9 @@
 # Changelog
 ## [Unreleased]
 ### Added
+- Implemented Redux Toolkit for state management
+- Added TypeScript types for Redux store and slices
+- Updated Android build configuration with latest SDK versions
 - Added loading indicator for database operations
 - Implemented error handling components for better user feedback
 - Implemented activity summary view with detailed modal
