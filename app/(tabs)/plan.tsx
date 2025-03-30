@@ -1,69 +1,24 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { Card, SegmentedButtons, Text, Title } from 'react-native-paper';
+import { useDispatch, useSelector } from 'react-redux';
 import DaySelector from '../DaySelector';
 import SleepTimeSelector from '../SleepTimeSelector';
-import { ACTIVITIES, ActivityType, DailyActivitiesRecord, SleepTime } from '../types/types';
-import { initDatabase, loadDailyActivities, saveDailyActivities } from '../utils/database';
-import { debounce } from '../utils/debounce';
+import { initializeDatabase, updateDailyActivities } from '../store/slices/activitiesSlice';
+import { setSelectedDate } from '../store/slices/dateSlice';
+import { AppDispatch, RootState } from '../store/store';
+import { ACTIVITIES, ActivityType, SleepTime } from '../types/types';
 
 export default function HomeScreen() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const dispatch = useDispatch<AppDispatch>();
+  const selectedDate = useSelector((state: RootState) => new Date(state.date.selectedDate));
   const memoizedDay = useMemo(() => selectedDate.toISOString().split('T')[0], [selectedDate]);
-  const [dailyActivities, setDailyActivities] = useState<DailyActivitiesRecord>(() => {
-    return {
-      [memoizedDay]: {
-        sleepTime: { start: '22:00', end: '06:00' },
-        activities: Array.from({length:24}, () => ({ hour: '', activity: '' as ActivityType }))
-      }
-    };
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { dailyActivities, isLoading, error } = useSelector((state: RootState) => state.activities);
 
   useEffect(() => {
-    const setupDatabase = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        console.log('Database setup start');
-        await initDatabase();
-        const savedActivities = await loadDailyActivities();
-        console.log(savedActivities)
-        setDailyActivities(savedActivities);
-      } catch (err) {
-        console.error('Database setup error:', err);
-        setError('Failed to initialize database. Please restart the app.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    setupDatabase();
-  }, []);
-
-  const debouncedSave = useMemo(
-    () =>
-      debounce(async (day: string, activities: any[], sleepTime: SleepTime) => {
-        try {
-          await saveDailyActivities(day, activities, sleepTime);
-        } catch (error) {
-          console.error('Error saving activities:', error);
-          setError('Failed to save activities. Please try again.');
-        }
-      }, 1000),
-    []
-  );
-
-  useEffect(() => {
-    if (dailyActivities[memoizedDay]) {
-      debouncedSave(
-        memoizedDay,
-        dailyActivities[memoizedDay].activities,
-        dailyActivities[memoizedDay].sleepTime
-      );
-    }
-  }, [dailyActivities, memoizedDay, debouncedSave]);
+    dispatch(initializeDatabase());
+  }, [dispatch]);
 
   if (isLoading) {
     return (
@@ -82,46 +37,36 @@ export default function HomeScreen() {
     );
   }
 
-  const handleDayChange=(date:Date)=>{
-    if(!dailyActivities[memoizedDay]){
-      setDailyActivities((prevState) =>({
-        ...prevState,
-        [memoizedDay] :{
-          sleepTime:{start:'22:00',end:'06:00'},
-          activities:Array.from({length:24}, () => ({ hour: '', activity: '' as ActivityType }))
-        }
-      }))
+  const handleDayChange = (date: Date) => {
+    if (!dailyActivities[memoizedDay]) {
+      dispatch(updateDailyActivities({
+        day: memoizedDay,
+        sleepTime: { start: '22:00', end: '06:00' },
+        activities: Array.from({ length: 24 }, () => ({ hour: '', activity: '' as ActivityType }))
+      }));
     }
-    setSelectedDate(date);
+    dispatch(setSelectedDate(date));
   }
 
-  const handleSleepTimeChange = (sleepTime:SleepTime) => {
-    const start = sleepTime.start
-    const end = sleepTime.end
-    setDailyActivities((prevState) => ({
-      ...prevState,
-      [memoizedDay]: {
-        sleepTime: { start, end },
-        activities: prevState[memoizedDay]?.activities || Array.from({length: 24}, () => ({ hour: '', activity: '' as ActivityType }))
-      }
+  const handleSleepTimeChange = (sleepTime: SleepTime) => {
+    dispatch(updateDailyActivities({
+      day: memoizedDay,
+      sleepTime: { start: sleepTime.start, end: sleepTime.end },
+      activities: dailyActivities[memoizedDay]?.activities || Array.from({ length: 24 }, () => ({ hour: '', activity: '' as ActivityType }))
     }));
   }
 
-  const handleActivityChange = (hourIndex: number,activity:ActivityType)=>{
-    setDailyActivities((prevState) =>{
-      const prevActivities = prevState[memoizedDay]?.activities || Array.from({length:24}, 
-        () => ({ hour: '', activity: '' as ActivityType }))
-      const newActivities = [...prevActivities]
-      newActivities[hourIndex] = {...newActivities[hourIndex],hour:hourIndex.toString(),activity:activity};
-      return{
-        ...prevState,
-        [memoizedDay] :{
-          sleepTime:prevState[memoizedDay]?.sleepTime || {start:'22:00',end:'06:00'},
-          activities :newActivities
-        }
-      }
-      
-    })
+  const handleActivityChange = (hourIndex: number, activity: ActivityType) => {
+    const prevActivities = dailyActivities[memoizedDay]?.activities || Array.from({ length: 24 }, 
+      () => ({ hour: '', activity: '' as ActivityType }));
+    const newActivities = [...prevActivities];
+    newActivities[hourIndex] = { ...newActivities[hourIndex], hour: hourIndex.toString(), activity: activity };
+    
+    dispatch(updateDailyActivities({
+      day: memoizedDay,
+      sleepTime: dailyActivities[memoizedDay]?.sleepTime || { start: '22:00', end: '06:00' },
+      activities: newActivities
+    }));
 
   }
 
