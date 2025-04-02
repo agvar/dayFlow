@@ -103,65 +103,18 @@ export default function ActivitySummary() {
 };
 
 const styles = StyleSheet.create({
-  emptyCard: {
-    marginTop: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  emptyText: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  emptySubText: {
-    fontSize: 14,
-    textAlign: 'center',
-    color: '#666',
-  },
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  title: {
-    marginBottom: 16,
-    fontWeight: 'bold',
-  },
-  card: {
-    marginBottom: 8,
-  },
-  cardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  time: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  activity: {
-    flex: 1,
-    marginLeft: 16,
-    fontSize: 16,
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  activitySection: {
-    marginBottom: 20,
-  },
-  activityCard: {
-    marginTop: 8,
-  },
-  inputCard: {
-    marginTop: 8,
-    backgroundColor: '#F5F5F5',
-  },
+  emptyCard: { marginTop: 20, backgroundColor: '#f5f5f5' },
+  emptyText: { fontSize: 18, textAlign: 'center', marginBottom: 8 },
+  emptySubText: { fontSize: 14, textAlign: 'center', color: '#666' },
+  container: { flex: 1, padding: 16 },
+  title: { marginBottom: 16, fontWeight: 'bold' },
+  card: { marginBottom: 8 },
+  cardContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  time: { fontWeight: 'bold', fontSize: 16 },
+  activity: { flex: 1, marginLeft: 16, fontSize: 16 },
+  modalContent: { backgroundColor: 'white', padding: 20, margin: 20, borderRadius: 8 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  activitySection: { marginBottom: 20 },
+  activityCard: { marginTop: 8 },
+  inputCard: { marginTop: 8, backgroundColor: '#F5F5F5' }
 });

@@ -1,16 +1,17 @@
-
-import { useEffect, useMemo } from 'react';
+import { Picker } from '@react-native-picker/picker';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
-import { Card, SegmentedButtons, Text, Title } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 import DaySelector from '../DaySelector';
-import SleepTimeSelector from '../SleepTimeSelector';
 import { initializeDatabase, updateDailyActivities } from '../store/slices/activitiesSlice';
 import { setSelectedDate } from '../store/slices/dateSlice';
 import { AppDispatch, RootState } from '../store/store';
-import { ACTIVITIES, ActivityType } from '../types/types';
+import { ActivityType } from '../types/types';
 
 export default function HomeScreen() {
+  const [startTime, setStartTime] = useState(0);
+  const [endTime, setEndTime] = useState(0);
   const dispatch = useDispatch<AppDispatch>();
   const selectedDate = useSelector((state: RootState) => new Date(state.date.selectedDate));
   const memoizedDay = useMemo(() => selectedDate.toISOString().split('T')[0], [selectedDate]);
@@ -77,6 +78,90 @@ export default function HomeScreen() {
     }
   }
   return (
+    <ScrollView style={styles.container}>
+      <DaySelector />
+      <Text style={styles.header}>My Schedule</Text>
+      <Text style={styles.subHeader}>{selectedDate.toLocaleString('en-US', { weekday: 'long' })}, {selectedDate.toLocaleString('en-US', { month: 'long' })} {selectedDate.getDate()}</Text>
+
+      {/* Add Activity Section */}
+      <View style={styles.activitySection}>
+        <View style={styles.card}>
+          <Text style={styles.sectionHeader}>Add Activity</Text>
+          <View style={styles.timeContainer}>
+            <View style={styles.timeItem}>
+              <Text style={styles.timeText}>Start Time:</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={startTime}
+                  style={styles.picker}
+                  onValueChange={(itemValue) => setStartTime(itemValue)}
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <Picker.Item key={i} label={`${i}:00`} value={i} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+            <View style={styles.timeItem}>
+              <Text style={styles.timeText}>End Time:</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={endTime}
+                  style={styles.picker}
+                  onValueChange={(itemValue) => setEndTime(itemValue)}
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <Picker.Item key={i} label={`${i}:00`} value={i} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+            <View style={styles.timeItem}>
+              <Text style={styles.timeText}>Duration:</Text>
+              <Text style={styles.durationText}>{endTime >= startTime ? endTime - startTime : 24 - startTime + endTime}h</Text>
+            </View>
+          </View>
+          <Text style={styles.activityText}>Activity: Work</Text>
+        </View>
+      </View>
+
+      {/* Show Activities Listing */}
+      <View style={styles.activity}>
+        <Text style={styles.time}>9:00 AM</Text>
+        <View style={[styles.TimelineCard, { backgroundColor: '#FFF3E0' }]}>
+          <Text style={styles.title}>Team Meeting</Text>
+          <Text style={styles.subtitle}>1h - Work</Text>
+        </View>
+      </View>
+
+      <View style={styles.activity}>
+        <Text style={styles.time}>10:00 AM</Text>
+        <View style={[styles.TimelineCard, { backgroundColor: '#E0F7FA' }]}>
+          <Text style={styles.title}>Project Development</Text>
+          <Text style={styles.subtitle}>2h - Work</Text>
+        </View>
+      </View>
+
+      {/* Add more activities similarly */}
+
+
+
+      {/* Quick Add Section */}
+      <Text style={styles.sectionHeader}>Quick Add</Text>
+      <View style={styles.quickAdd}>
+        <Text style={styles.quickAddItem}>Work</Text>
+        <Text style={styles.quickAddItem}>Break</Text>
+        <Text style={styles.quickAddItem}>Exercise</Text>
+        <Text style={styles.quickAddItem}>Study</Text>
+      </View>
+
+
+    </ScrollView>
+  );
+
+ 
+  /*
+  return (
     <View style={styles.container}>
       <ScrollView>
       <DaySelector />
@@ -107,8 +192,11 @@ export default function HomeScreen() {
       </ScrollView>
     </View>
   );
+  */
 }
 
+
+/*
 const styles = StyleSheet.create({
   container: {
       flex: 1,
@@ -164,6 +252,31 @@ const styles = StyleSheet.create({
       padding: 16,
   },
 });
+*/
 
-
-  
+const styles = StyleSheet.create({
+  container: { flex: 1, paddingTop: 20 },
+  timeContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingHorizontal: 8 },
+  timeItem: { flex: 1, marginHorizontal: 4, alignItems: 'center' },
+  pickerContainer: { borderWidth: 1, borderColor: '#ccc', borderRadius: 4, overflow: 'hidden', marginTop: 5, width: '100%' },
+  picker: { width: '100%', height: 40 },
+  timeText: { fontSize: 14, color: '#666', marginBottom: 5, textAlign: 'center' },
+  durationText: { fontSize: 14, color: '#666', marginTop: 10, textAlign: 'center' },
+  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 8 },
+  subHeader: { fontSize: 16, color: '#666', marginBottom: 24 },
+  activitySection: { marginBottom: 24 },
+  sectionHeader: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
+  card: { borderRadius: 8, padding: 16, elevation: 2, backgroundColor: '#F5F5F5' },
+  activityText: { fontSize: 14, color: '#666', marginTop: 4 },
+  activityName: { marginTop: 8 },
+  time: { width: 80, fontSize: 14, color: 'gray' },
+  TimelineCard: { flex: 1, padding: 12, borderRadius: 8, backgroundColor: '#F5F5F5' },
+  title: { fontSize: 16, fontWeight: 'bold' },
+  activity: { flexDirection: 'row', marginBottom: 16 },
+  subtitle: { fontSize: 14, color: 'gray' },
+  quickAdd: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 16 },
+  quickAddItem: { fontSize: 16, fontWeight: 'bold', color: '#6200EE' },
+  loadingText: { marginTop: 16, fontSize: 16 },
+  errorText: { color: 'red', fontSize: 16, textAlign: 'center', padding: 16 },
+  centerContent: { justifyContent: 'center', alignItems: 'center' }
+});

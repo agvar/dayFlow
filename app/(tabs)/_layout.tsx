@@ -1,30 +1,32 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
 
-export default function TabLayout() {
+export default function TabsLayout() {
   return (
-    <Tabs screenOptions={{
-      headerShown: false,
-      tabBarActiveTintColor: '#007AFF',
-    }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Plan',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="calendar-clock" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="summary"
-        options={{
-          title: 'Summary',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chart-timeline-variant" size={size} color={color} />
-          ),
-        }}
-      />
+    <Tabs
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap;
+
+          if (route.name === 'index') {
+            iconName = 'time-outline'; 
+          } else if (route.name === 'summary') {
+            iconName = 'stats-chart-outline';
+          } else if (route.name === 'categories') {
+            iconName = 'grid-outline';
+          } else {
+            iconName = 'settings-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#6200EE',
+        tabBarInactiveTintColor: 'gray',
+        headerShown: false,
+      })}
+    >
+      <Tabs.Screen name="index" options={{ title: 'Timeline' }} />
+      <Tabs.Screen name="summary" options={{ title: 'Summary' }} />
     </Tabs>
   );
 }
