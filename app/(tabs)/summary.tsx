@@ -9,7 +9,7 @@ export default function ActivitySummary() {
   const selectedDate = useSelector((state: RootState) => new Date(state.date.selectedDate));
   const dailyActivities = useSelector((state: RootState) => state.activities.dailyActivities);
   const memoizedDay = selectedDate.toISOString().split('T')[0];
-  const activities = dailyActivities[memoizedDay]?.activities || [];
+  const activities = dailyActivities[memoizedDay] || [];
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
   const [visible, setVisible] = useState(false);
 

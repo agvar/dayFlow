@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { DailyActivitiesRecord, SleepTime } from '../../types/types';
+import { ActivityItem, DailyActivitiesRecord } from '../../types/types';
 import { initDatabase, loadDailyActivities, saveDailyActivities } from '../../utils/database';
 
 interface ActivitiesState {
@@ -25,9 +25,9 @@ export const initializeDatabase = createAsyncThunk(
 
 export const saveActivities = createAsyncThunk(
   'activities/saveActivities',
-  async ({ day, activities, sleepTime }: { day: string; activities: any[]; sleepTime: SleepTime }) => {
-    await saveDailyActivities(day, activities, sleepTime);
-    return { day, activities, sleepTime };
+  async ({ day, activities }: { day: string; activities: ActivityItem[] }) => {
+    await saveDailyActivities(day, activities);
+    return { day, activities };
   }
 );
 
@@ -36,11 +36,8 @@ const activitiesSlice = createSlice({
   initialState,
   reducers: {
     updateDailyActivities: (state, action) => {
-      const { day, activities, sleepTime } = action.payload;
-      state.dailyActivities[day] = {
-        activities,
-        sleepTime,
-      };
+      const { day, activities } = action.payload;
+      state.dailyActivities[day] = activities;
     },
   },
   extraReducers: (builder) => {

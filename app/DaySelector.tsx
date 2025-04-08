@@ -40,25 +40,8 @@ return (
 }
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 16,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    title: {
-        marginBottom: 16,
-        textAlign: 'center',
-    },
-    button: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        padding: 8,
-        borderRadius: 4
-    },
-    dateText: {
-        color: '#6200ee',
-        fontSize: 16
-    }
+    container: { padding: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
+    title: { marginBottom: 16, textAlign: 'center' },
+    button: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 8, borderRadius: 4 },
+    dateText: { color: '#6200ee', fontSize: 16 }
 })
