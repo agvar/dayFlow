@@ -1,11 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
-import { IconButton, Modal, Portal, Text, TextInput, TouchableRipple } from 'react-native-paper';
+import { IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
-import ActivityIcons, { ActivityIconType, activityIconsData } from '../ActivityIcons';
-import DaySelector from '../DaySelector';
+import { ActivityIconType, activityIconsData } from '../components/ActivityIcons';
+import DaySelector from '../components/DaySelector';
 import { initializeDatabase, updateDailyActivities } from '../store/slices/activitiesSlice';
 import { setSelectedDate } from '../store/slices/dateSlice';
 import { AppDispatch, RootState } from '../store/store';
@@ -164,149 +165,55 @@ export default function HomeScreen() {
       <Text style={styles.header}>My Day Flow</Text>
       <Text style={styles.subHeader}>{selectedDate.toLocaleString('en-US', { weekday: 'long' })}, {selectedDate.toLocaleString('en-US', { month: 'long' })} {selectedDate.getDate()}</Text>
 
-      {/* Add Activity Section */}
-      <View style={styles.activitySection}>
-        <View style={styles.activityCard}>
-        <View style={styles.activityHeader}>
-          <Text style={styles.cardTitle}>Add Activity</Text>
-           <Ionicons name="add-circle" size={30} color="#6200ee" />
-        </View>
-
-          <View style={styles.timeContainer}>
-            <View style={styles.timePickerWrapper}>
-              <Text style={styles.timeLabel}>Start Time</Text>
-              {renderTimePickerButton(true)}
-            </View>
-            <View style={styles.timePickerWrapper}>
-              <Text style={styles.timeLabel}>End Time</Text>
-              {renderTimePickerButton(false)}
-            </View>
-            <View style={styles.durationWrapper}>
-              <Text style={styles.timeLabel}>Duration</Text>
-              <Text style={styles.durationValue}>{endTime >= startTime ? endTime - startTime : 24 - startTime + endTime}h</Text>
-            </View>
-          </View>
-          {renderTimePickerModal(true)}
-          {renderTimePickerModal(false)}
-          <Text style={[styles.activityLabel, { marginBottom: 8 }]}>Activity Name</Text>
-          <TextInput
-              mode="outlined"
-              placeholder="What are you working on?"
-              placeholderTextColor="#AAAAAA"
-              style={[styles.activityInput]}
-              outlineStyle={{ borderRadius: 8, borderColor: '#E0E0E0' }}
-              value={activityName}
-              onChangeText={setActivityName}
-          />
-          {/* Actvity category */}
-          <Text style={[styles.activityLabel, { marginBottom: 8 }]}>Category</Text>
-          <ActivityIcons 
-            onSelectIcon={setSelectedIcon} 
-            selectedIconId={selectedIcon?.id}
-          />
-          <TouchableRipple
-            style={styles.addButton}
-            onPress={handleActivityChange}
-            disabled={!selectedIcon || !activityName}
-          >
-            <Text style={styles.addButtonText}>Add Activity</Text>
-          </TouchableRipple>
-        </View>
-      </View>
 
       {/* Show Activities Listing */}
       <View style={styles.activitySection}>
         <View style={styles.activityCard}>
-          <View style={styles.activityHeader}>
-            <Text style={styles.cardTitle}>Activity Set</Text>
-            <MaterialIcons name="event" size={24} color="#6200ee" />
-          </View>
-          {dailyActivities[memoizedDay]?.map((activity, index) => (
-            <View key={index} style={styles.activity}>
-              <Text style={styles.time}>{activity.startTime} - {activity.endTime}</Text>
-              <View style={[styles.TimelineCard, { backgroundColor: activityIconsData.find(icon => icon.id === activity.category)?.color + '20' || '#F5F5F5' }]}>
-                <Text style={styles.title}>{activity.activity}</Text>
-                <Text style={styles.subtitle}>{activityIconsData.find(icon => icon.id === activity.category)?.name || 'Activity'}</Text>
+
+          {dailyActivities[memoizedDay]?.length === 0 || !dailyActivities[memoizedDay] ? (
+            <Text style={styles.noActivityText}>Add activity using the add activity button below</Text>
+          ) : (
+            <>
+              <View style={styles.activityHeader}>
+                <Text style={styles.cardTitle}>Activity Set</Text>
+                <MaterialIcons name="event" size={24} color="#6200ee" />
               </View>
-            </View>
-          ))}
+              {dailyActivities[memoizedDay]?.map((activity, index) => (
+                <View key={index} style={styles.activity}>
+                  <View style={styles.activityRow}>
+                    <Text style={styles.time}>{activity.startTime} - {activity.endTime}</Text>
+                    <View style={[styles.TimelineCard, { flex: 1, backgroundColor: activityIconsData.find(icon => icon.id === activity.category)?.color + '20' || '#F5F5F5' }]}>
+                      <Text style={styles.title}>{activity.activity}</Text>
+                      <Text style={styles.subtitle}>{activityIconsData.find(icon => icon.id === activity.category)?.name || 'Activity'}</Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </>
+          )}
         </View>
       </View>
-      {/* Add more activities similarly */}
-
-
-
-
-
+      
+      {/* Add Activity Button */}
+      <View style={styles.activitySection}>
+        <TouchableRipple
+          style={styles.addActivityButton}
+          onPress={() => router.push('/add-activity')}
+        >
+          <View style={styles.addActivityButtonContent}>
+            <Text style={styles.addActivityButtonText}>Add New Activity</Text>
+            <Ionicons name="add-circle" size={24} color="white" />
+          </View>
+        </TouchableRipple>
+      </View>
     </ScrollView>
   );
-
- 
-  /*
-  return (
-    <View style={styles.container}>
-      <ScrollView>
-      <DaySelector />
-        <Title style={styles.titleMain}>Daily Activity Tracker</Title>
-        <SleepTimeSelector />
-        <Text variant="titleMedium" style={styles.titleActivity}>Schedule your Activities</Text>
-        {(dailyActivities[memoizedDay] ?? Array.from({length: 24}, () => ({ hour: '', activity: '' as ActivityType }))).map((item, index) => {
-          if (!isSleepHour(`${index.toString().padStart(2, '0')}:00`)) {
-            return (
-              <Card key={index} style={styles.card}>
-                <Card.Content style={styles.cardContent}>
-                  <Text style={styles.hourText}>{`${index.toString().padStart(2, '0')}:00`}</Text>
-                  <SegmentedButtons
-                    style={styles.segmentedButtons}
-                    value={item.activity}
-                    onValueChange={(value) => handleActivityChange(index, value as ActivityType)}
-                    buttons={ACTIVITIES.map((activity) => ({
-                      value: activity,
-                      label: activity,
-                    }))}
-                  />
-                </Card.Content>
-              </Card>
-            );
-          }
-          return null;
-        })}
-      </ScrollView>
-    </View>
-  );
-  */
 }
 
-
-/*
 const styles = StyleSheet.create({
-  addButton: {
-    backgroundColor: '#6200ee',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 16,
-    alignItems: 'center'
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold'
-  },
-  container: {flex: 1,paddingTop: 20,  },
-  scrollView: {flex: 1,paddingHorizontal: 16,  },
-  titleMain: {textAlign: 'center',marginBottom: 16,marginHorizontal: 16,fontSize: 24,fontWeight: 'bold',  },
-  titleActivity :{marginBottom:16,padding :16,},
-  card: {marginBottom: 8,marginHorizontal: 16,},
-  cardContent: {flexDirection: 'row',alignItems: 'center',justifyContent: 'space-between',paddingVertical: 8,paddingHorizontal: 12,  },
-  hourText: {fontSize: 16,fontWeight: 'bold',minWidth: 60,  },
-  segmentedButtons: {width: '70%',marginLeft: 8,  },
-  centerContent: {justifyContent: 'center',alignItems: 'center',  },
-  loadingText: {marginTop: 16,fontSize: 16,  },
-  errorText: {color: 'red',fontSize: 16,textAlign: 'center',padding: 16,},
-});
-*/
-
-const styles = StyleSheet.create({
+  addActivityButton: { backgroundColor: '#6200ee', borderRadius: 12, padding: 16, marginBottom: 16 },
+  addActivityButtonContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  addActivityButtonText: { color: 'white', fontSize: 16, fontWeight: '500' },
   container: { flex: 1, padding: 16 },
   centerContent: { justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 16, fontSize: 16, color: '#666' },
@@ -338,8 +245,10 @@ const styles = StyleSheet.create({
   addButton: { backgroundColor: '#6200ee', borderRadius: 8, padding: 12, alignItems: 'center', marginTop: 8 },
   addButtonText: { color: 'white', fontSize: 16, fontWeight: '500' },
   activity: { marginBottom: 16 },
-  time: { fontSize: 14, color: '#666', marginBottom: 8 },
-  TimelineCard: { padding: 16, borderRadius: 8, marginBottom: 8 },
+  activityRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  time: { fontSize: 14, color: '#666', minWidth: 100 },
+  TimelineCard: { padding: 16, borderRadius: 8 },
   title: { fontSize: 16, fontWeight: '500', marginBottom: 4 },
-  subtitle: { fontSize: 14, color: '#666' },
+  subtitle: { fontSize: 14, color: '#666', textAlign: 'center', marginVertical: 16 },
+  noActivityText: { fontSize: 14, color: '#666', textAlign: 'center', marginVertical: 16 },
 });

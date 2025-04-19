@@ -3,8 +3,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSelectedDate } from './store/slices/dateSlice';
-import { RootState } from './store/store';
+import { setSelectedDate } from '../store/slices/dateSlice';
+import { RootState } from '../store/store';
 
 export default function DaySelector() {
 const [visible,setVisible]= useState<boolean>(false);

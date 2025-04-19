@@ -10,6 +10,7 @@ export type ActivityIconType = {
   name: string;
   component: React.ReactNode;
   color: string;
+  category : string;
 };
 
 interface ActivityIconsProps {
@@ -21,39 +22,39 @@ export const activityIconsData: ActivityIconType[] = [
   {
     id: 'meditation',
     name: 'Meditation',
-    component: <MaterialCommunityIcons name="meditation" size={24} color="green" />,
-    color: 'green'
+    component: <MaterialCommunityIcons name="meditation" size={24} color="#4CAF50" />,
+    color: '#4CAF50',
+    category: 'Health'
   },
   {
     id: 'call',
     name: 'Call',
-    component: <Feather name="phone-call" size={20} color="blue" />,
-    color: 'blue'
+    component: <Feather name="phone-call" size={20} color="#2196F3" />,
+    color: '#2196F3',
+    category: 'Communication'
   },
   {
     id: 'work',
     name: 'Work',
-    component: <MaterialIcons name="computer" size={24} color="black" />,
-    color: 'black'
+    component: <MaterialIcons name="computer" size={24} color="#212121" />,
+    color: '#212121',
+    category: 'Work'
   },
   {
-    id: 'entertainment',
-    name: 'Entertainment',
-    component: <MaterialCommunityIcons name="netflix" size={24} color="red" />,
-    color: 'red'
+    id: 'Screen Time',
+    name: 'Screen Time',
+    component: <MaterialCommunityIcons name="netflix" size={24} color="#F44336" />,
+    color: '#F44336',
+    category: 'Entertainment'
   },
   {
     id: 'reading',
     name: 'Reading',
-    component: <FontAwesome5 name="book-reader" size={24} color="orange" />,
-    color: 'orange'
+    component: <FontAwesome5 name="book-reader" size={24} color="#FF9800" />,
+    color: '#FF9800',
+    category: 'Education'
   },
-  {
-    id: 'more',
-    name: 'More',
-    component: <MaterialIcons name="more-horiz" size={24} color="black" />,
-    color: 'black'
-  },
+
 ];
 
 const ActivityIcons: React.FC<ActivityIconsProps> = ({ onSelectIcon, selectedIconId }) => {
