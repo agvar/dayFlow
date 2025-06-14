@@ -49,18 +49,16 @@ export default function ActivitySummary() {
           </Card>
         ) : (
           activities.map((activity, index) => (
-          activity.activity && (
             <TouchableOpacity key={index} onPress={() => showModal(activity)}>
-              <Card style={[styles.card, { backgroundColor: getActivityColor(activity.activity) }]}>
+              <Card style={[styles.card, { backgroundColor: getActivityColor(activity.activity as ActivityType) }]}>
                 <Card.Content style={styles.cardContent}>
-                  <Text style={styles.time}>{`${activity.hour.padStart(2, '0')}:00`}</Text>
+                  <Text style={styles.time}>{activity.startTime} - {activity.endTime}</Text>
                   <Text style={styles.activity}>{activity.activity}</Text>
                   <IconButton icon="chevron-right" size={24} />
                 </Card.Content>
               </Card>
             </TouchableOpacity>
-          )
-        ))
+          ))
         )}
       </ScrollView>
 
@@ -73,7 +71,7 @@ export default function ActivitySummary() {
           {selectedActivity && (
             <View>
               <View style={styles.modalHeader}>
-                <Text variant="headlineMedium">{`${selectedActivity.hour.padStart(2, '0')}:00`}</Text>
+                <Text variant="headlineMedium">{`${selectedActivity.startTime} - ${selectedActivity.endTime}`}</Text>
                 <IconButton icon="close" size={24} onPress={hideModal} />
               </View>
               
