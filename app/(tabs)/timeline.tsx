@@ -4,12 +4,9 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
-import { useDispatch, useSelector } from 'react-redux';
 import { ActivityIconType, activityIconsData } from '../components/ActivityIcons';
 import DaySelector from '../components/DaySelector';
-import { initializeDatabase, updateDailyActivities } from '../store/slices/activitiesSlice';
-import { setSelectedDate } from '../store/slices/dateSlice';
-import { AppDispatch, RootState } from '../store/store';
+import { useActivity } from '../context/ActivityContext';
 import { ActivityType } from '../types/types';
 
 export default function HomeScreen() {
@@ -20,14 +17,22 @@ export default function HomeScreen() {
   const [activityName, setActivityName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<ActivityIconType | null>(null);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
-  const dispatch = useDispatch<AppDispatch>();
-  const selectedDate = useSelector((state: RootState) => new Date(state.date.selectedDate));
+  
+  const { 
+    dailyActivities, 
+    selectedDate, 
+    isLoading, 
+    error,
+    updateDailyActivities,
+    setSelectedDate,
+    initializeDatabase 
+  } = useActivity();
+  
   const memoizedDay = useMemo(() => selectedDate.toISOString().split('T')[0], [selectedDate]);
-  const { dailyActivities, isLoading, error } = useSelector((state: RootState) => state.activities);
 
   useEffect(() => {
-    dispatch(initializeDatabase());
-  }, [dispatch]);
+    initializeDatabase();
+  }, []);
 
   if (isLoading) {
     return (
@@ -48,12 +53,14 @@ export default function HomeScreen() {
 
   const handleDayChange = (date: Date) => {
     if (!dailyActivities[memoizedDay]) {
-      dispatch(updateDailyActivities({
-        day: memoizedDay,
-        activities: Array.from({ length: 24 }, () => ({ hour: '', activity: '' as ActivityType }))
-      }));
+      updateDailyActivities(memoizedDay, 
+        Array.from({ length: 24 }, () => ({ 
+          hour: '', 
+          activity: '' as ActivityType 
+        }))
+      );
     }
-    dispatch(setSelectedDate(date));
+    setSelectedDate(date);
   }
 
 
@@ -64,22 +71,15 @@ export default function HomeScreen() {
     const prevActivities = dailyActivities[memoizedDay] || [];
     const newActivities = [...prevActivities];
     
-    const formattedStartTime = formatTime(startTime);
-    const formattedEndTime = formatTime(endTime);
-    
     const newActivity = {
-      startTime: formattedStartTime,
-      endTime: formattedEndTime,
+      startTime: formatTime(startTime),
+      endTime: formatTime(endTime),
       activity: activityName,
       category: selectedIcon.id
     };
     
     newActivities.push(newActivity);
-    
-    dispatch(updateDailyActivities({
-      day: memoizedDay,
-      activities: newActivities
-    }));
+    updateDailyActivities(memoizedDay, newActivities);
     
     // Reset form
     setActivityName('');

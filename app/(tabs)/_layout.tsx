@@ -25,7 +25,7 @@ export default function TabsLayout() {
         headerShown: false,
       })}
     >
-      <Tabs.Screen name="index" options={{ title: 'Timeline' }} />
+      <Tabs.Screen name="timeline" options={{ title: 'Timeline' }} />
       <Tabs.Screen name="summary" options={{ title: 'Summary' }} />
     </Tabs>
   );

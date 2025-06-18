@@ -1,16 +1,15 @@
 import { Stack } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
-import { Provider } from 'react-redux';
-import { store } from './store/store';
+import { ActivityProvider } from './context/ActivityContext';
 
 export default function RootLayout() {
   return (
-    <Provider store={store}>
-      <PaperProvider>
+    <PaperProvider>
+      <ActivityProvider>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
-      </PaperProvider>
-    </Provider>
+      </ActivityProvider>
+    </PaperProvider>
   );
 }
