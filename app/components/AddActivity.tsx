@@ -3,9 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { IconButton, Modal, Portal, Text, TextInput, TouchableRipple } from 'react-native-paper';
-import { useDispatch } from 'react-redux';
-import { updateDailyActivities } from '../store/slices/activitiesSlice';
-import { AppDispatch } from '../store/store';
+import { useActivity } from '../context/ActivityContext';
 import { activityIconsData, ActivityIconType } from './ActivityIcons';
 
 interface AddActivityProps {
@@ -21,6 +19,9 @@ export default function AddActivity({ selectedDate, dailyActivities }: AddActivi
   const [activityName, setActivityName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<ActivityIconType | null>(null);
   const params = useLocalSearchParams();
+  const router = useRouter();
+  const { updateDailyActivities } = useActivity();
+  const memoizedDay = selectedDate.toISOString().split('T')[0];
 
   useEffect(() => {
     if (params.name && params.category && params.iconId) {
@@ -29,9 +30,6 @@ export default function AddActivity({ selectedDate, dailyActivities }: AddActivi
       if (icon) setSelectedIcon(icon);
     }
   }, [params]);
-  const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
-  const memoizedDay = selectedDate.toISOString().split('T')[0];
 
   const formatTime = (hour: number) => {
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
@@ -75,10 +73,8 @@ export default function AddActivity({ selectedDate, dailyActivities }: AddActivi
     
     newActivities.push(newActivity);
     
-    dispatch(updateDailyActivities({
-      day: memoizedDay,
-      activities: newActivities
-    }));
+    // Replace Redux dispatch with Context update
+    updateDailyActivities(memoizedDay, newActivities);
 
     // Reset form and navigate back
     setActivityName('');

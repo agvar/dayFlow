@@ -6,7 +6,7 @@ A mobile application designed to help users plan and track daily activities thro
 
 ### 1.2 System Architecture
 - **Frontend**: React Native with Expo
-- **State Management**: Redux Toolkit
+- **State Management**: React Context API
 - **Data Storage**: SQLite (local)
 - **UI Framework**: React Native Paper
 - **Styling**: NativeWind/TailwindCSS
@@ -17,7 +17,7 @@ A mobile application designed to help users plan and track daily activities thro
 app/
 ├── (tabs)/           # Main tab screens
 ├── components/       # Reusable UI components
-├── store/           # Redux store and slices
+├── context/         # React Context providers
 ├── utils/           # Helper functions and database
 └── types/           # TypeScript type definitions
 ```
@@ -27,7 +27,7 @@ app/
 |------------|---------|
 | React Native | Mobile framework |
 | TypeScript | Type safety |
-| Redux Toolkit | State management |
+| React Context API | State management |
 | SQLite | Local data storage |
 | Expo Router | Navigation |
 

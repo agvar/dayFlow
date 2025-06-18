@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Card, IconButton, Modal, Portal, Text } from 'react-native-paper';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
 import { ActivityItem, ActivityType } from '../types/types';
 
 export default function ActivitySummary() {

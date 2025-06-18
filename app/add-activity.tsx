@@ -1,12 +1,10 @@
 import { Stack } from 'expo-router';
 import { View } from 'react-native';
-import { useSelector } from 'react-redux';
 import AddActivity from './components/AddActivity';
-import { RootState } from './store/store';
+import { useActivity } from './context/ActivityContext';
 
 export default function AddActivityScreen() {
-  const selectedDate = useSelector((state: RootState) => new Date(state.date.selectedDate));
-  const { dailyActivities } = useSelector((state: RootState) => state.activities);
+  const { selectedDate, dailyActivities } = useActivity();
 
   return (
     <View style={{ flex: 1 }}>

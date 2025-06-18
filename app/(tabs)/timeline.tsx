@@ -7,9 +7,20 @@ import { IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-p
 import { ActivityIconType, activityIconsData } from '../components/ActivityIcons';
 import DaySelector from '../components/DaySelector';
 import { useActivity } from '../context/ActivityContext';
-import { ActivityType } from '../types/types';
+
+interface Activity {
+  startTime: string;
+  endTime: string;
+  activity: string;
+  category: string;
+}
+
+interface DailyActivities {
+  [key: string]: Activity[];
+}
 
 export default function HomeScreen() {
+  // Local state
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
   const [startPickerVisible, setStartPickerVisible] = useState(false);
@@ -18,6 +29,7 @@ export default function HomeScreen() {
   const [selectedIcon, setSelectedIcon] = useState<ActivityIconType | null>(null);
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   
+  // Context
   const { 
     dailyActivities, 
     selectedDate, 
@@ -53,17 +65,10 @@ export default function HomeScreen() {
 
   const handleDayChange = (date: Date) => {
     if (!dailyActivities[memoizedDay]) {
-      updateDailyActivities(memoizedDay, 
-        Array.from({ length: 24 }, () => ({ 
-          hour: '', 
-          activity: '' as ActivityType 
-        }))
-      );
+      updateDailyActivities(memoizedDay, []);
     }
     setSelectedDate(date);
-  }
-
-
+  };
 
   const handleActivityChange = () => {
     if (!selectedIcon || !activityName) return;
@@ -71,7 +76,7 @@ export default function HomeScreen() {
     const prevActivities = dailyActivities[memoizedDay] || [];
     const newActivities = [...prevActivities];
     
-    const newActivity = {
+    const newActivity: Activity = {
       startTime: formatTime(startTime),
       endTime: formatTime(endTime),
       activity: activityName,
@@ -81,7 +86,6 @@ export default function HomeScreen() {
     newActivities.push(newActivity);
     updateDailyActivities(memoizedDay, newActivities);
     
-    // Reset form
     setActivityName('');
     setSelectedIcon(null);
   }
