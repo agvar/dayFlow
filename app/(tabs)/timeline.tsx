@@ -4,20 +4,10 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { IconButton, Modal, Portal, Text, TouchableRipple } from 'react-native-paper';
-import { ActivityIconType, activityIconsData } from '../components/ActivityIcons';
+import { ActivityIconType } from '../components/ActivityIcons';
 import DaySelector from '../components/DaySelector';
 import { useActivity } from '../context/ActivityContext';
 
-interface Activity {
-  startTime: string;
-  endTime: string;
-  activity: string;
-  category: string;
-}
-
-interface DailyActivities {
-  [key: string]: Activity[];
-}
 
 export default function HomeScreen() {
   // Local state
@@ -41,6 +31,9 @@ export default function HomeScreen() {
   } = useActivity();
   
   const memoizedDay = useMemo(() => selectedDate.toISOString().split('T')[0], [selectedDate]);
+
+  // Use DailyActivitiesRecord type for dailyActivities
+  const activitiesForDay = dailyActivities[memoizedDay] || {};
 
   useEffect(() => {
     initializeDatabase();
@@ -73,19 +66,18 @@ export default function HomeScreen() {
   const handleActivityChange = () => {
     if (!selectedIcon || !activityName) return;
     
-    const prevActivities = dailyActivities[memoizedDay] || [];
-    const newActivities = [...prevActivities];
-    
-    const newActivity: Activity = {
-      startTime: formatTime(startTime),
-      endTime: formatTime(endTime),
+    const prevActivities = dailyActivities[memoizedDay] || {};
+    const newActivities = { ...prevActivities };
+
+    const newActivityKey = `${formatTime(startTime)}-${formatTime(endTime)}`;
+    const newActivity = {
       activity: activityName,
       category: selectedIcon.id
     };
-    
-    newActivities.push(newActivity);
+
+    newActivities[newActivityKey] = newActivity;
     updateDailyActivities(memoizedDay, newActivities);
-    
+
     setActivityName('');
     setSelectedIcon(null);
   }
@@ -174,7 +166,7 @@ export default function HomeScreen() {
       <View style={styles.activitySection}>
         <View style={styles.activityCard}>
 
-          {dailyActivities[memoizedDay]?.length === 0 || !dailyActivities[memoizedDay] ? (
+          {Object.keys(activitiesForDay).length === 0 ? (
             <Text style={styles.noActivityText}>Add activity using the add activity button below</Text>
           ) : (
             <>
@@ -182,15 +174,11 @@ export default function HomeScreen() {
                 <Text style={styles.cardTitle}>Activity Set</Text>
                 <MaterialIcons name="event" size={24} color="#6200ee" />
               </View>
-              {dailyActivities[memoizedDay]?.map((activity, index) => (
-                <View key={index} style={styles.activity}>
-                  <View style={styles.activityRow}>
-                    <Text style={styles.time}>{activity.startTime} - {activity.endTime}</Text>
-                    <View style={[styles.TimelineCard, { flex: 1, backgroundColor: activityIconsData.find(icon => icon.id === activity.category)?.color + '20' || '#F5F5F5' }]}>
-                      <Text style={styles.title}>{activity.activity}</Text>
-                      <Text style={styles.subtitle}>{activityIconsData.find(icon => icon.id === activity.category)?.name || 'Activity'}</Text>
-                    </View>
-                  </View>
+              {Object.entries(activitiesForDay).map(([timeSlot, activity]) => (
+                <View key={timeSlot} style={styles.activity}>
+                  <Text>{timeSlot}</Text>
+                  <Text>{activity.activity}</Text>
+                  <Text>{activity.category}</Text>
                 </View>
               ))}
             </>

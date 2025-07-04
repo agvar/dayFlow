@@ -1,22 +1,12 @@
 import { createContext, useContext, useState } from 'react';
-
-interface Activity {
-  startTime: string;
-  endTime: string;
-  activity: string;
-  category: string;
-}
-
-interface DailyActivities {
-  [key: string]: Activity[];
-}
+import { ActivityItemRecord, DailyActivitiesRecord } from '../types/types';
 
 interface ActivityContextType {
-  dailyActivities: DailyActivities;
+  dailyActivities: DailyActivitiesRecord; 
   selectedDate: Date;
   isLoading: boolean;
   error: string | null;
-  updateDailyActivities: (day: string, activities: Activity[]) => void;
+  updateDailyActivities: (day: string, activities: ActivityItemRecord) => void;
   setSelectedDate: (date: Date) => void;
   initializeDatabase: () => Promise<void>;
 }
@@ -24,12 +14,12 @@ interface ActivityContextType {
 const ActivityContext = createContext<ActivityContextType | undefined>(undefined);
 
 export function ActivityProvider({ children }: { children: React.ReactNode }) {
-  const [dailyActivities, setDailyActivities] = useState<DailyActivities>({});
+  const [dailyActivities, setDailyActivities] = useState<DailyActivitiesRecord>({}); 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const updateDailyActivities = (day: string, activities: Activity[]) => {
+  const updateDailyActivities = (day: string, activities: ActivityItemRecord) => {
     setDailyActivities(prev => ({
       ...prev,
       [day]: activities
